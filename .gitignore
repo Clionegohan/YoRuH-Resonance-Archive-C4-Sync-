@@ -39,6 +39,7 @@ env/
 
 # ChromaDB
 .chroma_db/
+.chroma_db_test/
 
 # Pod201
 .pod201/logs/
