@@ -40,7 +40,7 @@ updated_at: "2026-01-02"
 
 - [ ] **THE SYSTEM SHALL** 初回インデックス化を5分以内に完了すること（M4 Pro環境）
 
-- [ ] **THE SYSTEM SHALL** リアルタイム検索を500ms以内に完了すること
+- [ ] **THE SYSTEM SHALL** リアルタイム検索を300ms以内に完了すること
 
 - [ ] **THE SYSTEM SHALL** メモリ使用量を最大4GB以内に抑えること
 
@@ -55,7 +55,7 @@ updated_at: "2026-01-02"
 - [002-01: Phase 1 - Archive Synchronization](./002-01-phase1-archive-sync/002-01-phase1-archive-sync.md)
 - [002-02: Phase 2 - Real-time Resonance Analysis](./002-02-phase2-realtime-analysis/002-02-phase2-realtime-analysis.md)
 - [002-03: Phase 3 - Pod201 Report Generation](./002-03-phase3-pod-report/002-03-phase3-pod-report.md)
-- [002-04: System Integration & CLI](./002-04-integration-cli/002-04-integration-cli.md)
+- [002-04: System Integration & CLI](./002-04-phase4-integration-cli/002-04-phase4-integration-cli.md)
 
 ## 技術的制約
 
@@ -67,9 +67,10 @@ updated_at: "2026-01-02"
 
 ## 備考
 
-このEPICは3つのPhaseに分かれています：
+このEPICは4つのPhaseに分かれています：
 1. Phase 1: Archive Synchronization（記憶同期）
 2. Phase 2: Real-time Resonance Analysis（即時共鳴分析）
 3. Phase 3: Pod201 Report Generation（随行報告）
+4. Phase 4: System Integration & CLI（システム統合とCLI化）
 
 完全ローカル環境で動作し、外部ネットワーク通信を一切行いません。
