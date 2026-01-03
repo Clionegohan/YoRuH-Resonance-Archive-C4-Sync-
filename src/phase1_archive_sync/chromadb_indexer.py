@@ -5,10 +5,13 @@ This module provides a wrapper around ChromaDB for vector storage and retrieval.
 """
 import logging
 import os
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 import chromadb
 from chromadb.config import Settings
 from tqdm import tqdm
+
+if TYPE_CHECKING:
+    from src.phase1_archive_sync.multilevel_vectorizer import EmbeddingRecord
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +171,7 @@ class ChromaDBIndexer:
             except Exception as e:
                 error_msg = f"Error processing record {record.id}: {e}"
                 errors.append(error_msg)
-                logger.error(error_msg)
+                logger.exception(error_msg)
                 failed_count += 1
 
         # Insert remaining records in final batch
@@ -179,7 +182,7 @@ class ChromaDBIndexer:
             except Exception as e:
                 error_msg = f"Error inserting final batch: {e}"
                 errors.append(error_msg)
-                logger.error(error_msg)
+                logger.exception(error_msg)
                 failed_count += len(batch_ids)
 
         return {

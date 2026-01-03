@@ -53,7 +53,7 @@ def sample_embedding_records():
 def test_add_vectors_batch_method_exists(indexer):
     """AC: バッチ処理でChromaDBに挿入すること - メソッドが存在すること"""
     assert hasattr(indexer, 'add_vectors_batch')
-    assert callable(getattr(indexer, 'add_vectors_batch'))
+    assert callable(indexer.add_vectors_batch)
 
 
 def test_add_vectors_batch_accepts_embedding_records(indexer, sample_embedding_records):
@@ -197,17 +197,17 @@ def test_add_vectors_batch_default_batch_size_100(indexer):
 
 def test_add_vectors_batch_shows_progress_when_enabled(indexer, sample_embedding_records, capsys):
     """AC: 進捗を表示すること - show_progress=Trueで進捗バーが表示されること"""
-    result = indexer.add_vectors_batch(sample_embedding_records, show_progress=True)
+    indexer.add_vectors_batch(sample_embedding_records, show_progress=True)
 
     # Check that progress output was produced
     captured = capsys.readouterr()
     # tqdm writes to stderr by default
-    assert len(captured.err) > 0 or 'it/s' in captured.err or '%' in captured.err
+    assert len(captured.err) > 0
 
 
 def test_add_vectors_batch_no_progress_when_disabled(indexer, sample_embedding_records, capsys):
     """AC: 進捗を表示すること - show_progress=Falseで進捗バーを非表示にできること"""
-    result = indexer.add_vectors_batch(sample_embedding_records, show_progress=False)
+    indexer.add_vectors_batch(sample_embedding_records, show_progress=False)
 
     # Should not show progress
     captured = capsys.readouterr()
