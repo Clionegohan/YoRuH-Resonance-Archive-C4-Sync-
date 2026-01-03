@@ -1,9 +1,13 @@
 # Core dependencies for Resonance Archive System
 ollama>=0.1.0
-chromadb>=0.4.0
+# chromadb 0.3.23: Latest version compatible with Python 3.14
+# (0.4.0+ requires onnxruntime which lacks Python 3.14 wheels)
+chromadb==0.3.23
 watchdog>=3.0.0
 python-dotenv>=1.0.0
-pydantic>=2.0.0
+# pydantic<2.0: Required for chromadb 0.3.23 compatibility
+pydantic<2.0,>=1.10.0
+pydantic-settings>=2.0.0
 requests>=2.31.0
 
 # Testing dependencies
