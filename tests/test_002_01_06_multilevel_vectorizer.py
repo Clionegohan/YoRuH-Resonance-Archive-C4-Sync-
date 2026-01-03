@@ -95,8 +95,9 @@ def test_level1_summary_for_many_chunks(vectorizer):
     level1_records = [r for r in records if r.metadata['level'] == 1]
     level2_records = [r for r in records if r.metadata['level'] == 2]
 
-    if len(level2_records) > 5:
-        assert len(level1_records) == 1
+    # Ensure we actually have enough chunks to trigger summary
+    assert len(level2_records) > 5, f"Test precondition failed: expected >5 chunks, got {len(level2_records)}"
+    assert len(level1_records) == 1, "Level 1 summary should be generated for >5 chunks"
 
 
 def test_metadata_fields(vectorizer):

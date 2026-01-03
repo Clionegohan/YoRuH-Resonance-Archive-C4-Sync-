@@ -7,10 +7,11 @@ This module generates two-level vectors:
 """
 import hashlib
 import logging
+import re
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
-import time
 
 from src.phase1_archive_sync.semantic_splitter import SemanticSplitter
 from src.utils.ollama_client import OllamaClient
@@ -300,7 +301,6 @@ class MultilevelVectorizer:
             Date string (YYYY-MM-DD) or empty string
         """
         # Try to extract date from filename (e.g., 2026-01-03.md)
-        import re
         match = re.search(r'(\d{4}-\d{2}-\d{2})', file_path)
         if match:
             return match.group(1)
