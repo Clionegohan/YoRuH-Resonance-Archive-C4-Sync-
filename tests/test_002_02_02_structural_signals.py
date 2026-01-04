@@ -99,8 +99,8 @@ def test_detect_multiple_signals():
 
     signals = detector.detect(text)
 
-    # Should detect multiple signals
-    assert len(signals) >= 4  # 。, \n\n, 。, ---, ！
+    # Should detect multiple signals (。, \n\n, ---, ！)
+    assert len(signals) >= 4
 
     # Should be ordered by position
     positions = [s.position for s in signals]
@@ -126,19 +126,21 @@ def test_no_signals_returns_empty_list():
 
 
 def test_multiple_sentence_end_markers_at_same_position():
-    """AC: 同じ位置に複数の文末記号がある場合、最初の文字のみを1つのシグナルとして検知すること"""
+    """AC: 連続した位置に複数の文末記号がある場合、それぞれを個別のシグナルとして検知すること"""
     detector = StructuralSignalDetector()
     text = "Really！？"
 
     signals = detector.detect(text)
 
-    # Should detect only the first marker
+    # Should detect each marker separately
     sentence_ends = [s for s in signals if s.type == "sentence_end"]
 
-    # At position 6, only one signal should be detected (！)
-    position_6_signals = [s for s in sentence_ends if s.position == 6]
-    assert len(position_6_signals) == 1
-    assert position_6_signals[0].pattern == "！"
+    # Should have 2 sentence end signals (！ and ？)
+    assert len(sentence_ends) == 2
+    assert sentence_ends[0].pattern == "！"
+    assert sentence_ends[0].position == 6
+    assert sentence_ends[1].pattern == "？"
+    assert sentence_ends[1].position == 7
 
 
 def test_multiple_paragraph_breaks():
