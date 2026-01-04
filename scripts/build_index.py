@@ -42,8 +42,7 @@ def build_index(
     """
     start_time = time.time()
     process = psutil.Process()
-    memory_start = process.memory_info().rss / 1024 / 1024  # MB
-    memory_peak = memory_start
+    memory_peak = process.memory_info().rss / 1024 / 1024  # MB
 
     # Statistics
     files_scanned = 0
@@ -116,7 +115,7 @@ def build_index(
                     current_memory = process.memory_info().rss / 1024 / 1024
                     memory_peak = max(memory_peak, current_memory)
 
-            except Exception as e:
+            except Exception:
                 logger.exception(f"Error processing {file_path}")
                 continue
 
@@ -162,7 +161,7 @@ def build_index(
             'memory_peak_mb': memory_peak
         }
 
-    except Exception as e:
+    except Exception:
         logger.exception("Error during index build")
         return {
             'files_scanned': files_scanned,
