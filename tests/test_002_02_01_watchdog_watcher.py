@@ -4,6 +4,7 @@ Test for Subtask 002-02-01: Watchdogファイル監視実装
 このテストは承認されたAcceptance Criteriaから導出されています。
 """
 import pytest
+import shutil
 import tempfile
 import time
 from pathlib import Path
@@ -15,24 +16,22 @@ from src.phase2_realtime_analysis.file_watcher import FileWatcher
 def temp_diary_dir():
     """テスト用の一時的な日記ディレクトリを作成"""
     temp_dir = tempfile.mkdtemp()
-    diary_path = Path(temp_dir) / "01_diary" / "2026"
+    today = datetime.now()
+    diary_path = Path(temp_dir) / "01_diary" / str(today.year)
     diary_path.mkdir(parents=True)
 
     # Create today's diary file
-    today = datetime.now().strftime("%Y-%m-%d")
-    diary_file = diary_path / f"{today}.md"
+    diary_file = diary_path / f"{today.strftime('%Y-%m-%d')}.md"
     diary_file.write_text("# Initial content\n\nTest diary.")
 
     yield str(diary_path.parent.parent), str(diary_file)
 
     # Cleanup
-    import shutil
     shutil.rmtree(temp_dir)
 
 
 def test_file_watcher_class_exists():
     """AC: FileWatcherクラスが存在すること"""
-    from src.phase2_realtime_analysis.file_watcher import FileWatcher
     assert FileWatcher is not None
 
 
@@ -40,7 +39,7 @@ def test_watches_diary_directory(temp_diary_dir):
     """AC: Watchdogを統合し、01_diary/YYYY/YYYY-MM-dd.md を監視すること"""
     vault_root, _ = temp_diary_dir
 
-    watcher = FileWatcher(vault_root=vault_root, on_change_callback=lambda event: None)
+    watcher = FileWatcher(vault_root=vault_root, on_change_callback=lambda _: None)
 
     # Should watch the 01_diary directory
     expected_diary_dir = Path(vault_root) / "01_diary"
