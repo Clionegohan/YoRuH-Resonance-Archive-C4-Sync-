@@ -84,7 +84,7 @@ def build_index(
 
         # Step 3: Process files
         if show_progress:
-            print(f"🔄 Processing files and generating vectors...\n")
+            print("🔄 Processing files and generating vectors...\n")
 
         all_records = []
         iterator = tqdm(file_paths, desc="Vectorizing files", disable=not show_progress)
@@ -117,7 +117,7 @@ def build_index(
                     memory_peak = max(memory_peak, current_memory)
 
             except Exception as e:
-                logger.error(f"Error processing {file_path}: {e}")
+                logger.exception(f"Error processing {file_path}")
                 continue
 
         # Step 4: Batch insert to ChromaDB
@@ -141,7 +141,7 @@ def build_index(
 
         if show_progress:
             print(f"\n{'='*60}")
-            print(f"📊 Index Build Complete")
+            print("📊 Index Build Complete")
             print(f"{'='*60}")
             print(f"Files scanned:       {files_scanned}")
             print(f"Files processed:     {files_processed}")
@@ -163,7 +163,7 @@ def build_index(
         }
 
     except Exception as e:
-        logger.exception(f"Error during index build: {e}")
+        logger.exception("Error during index build")
         return {
             'files_scanned': files_scanned,
             'files_processed': files_processed,

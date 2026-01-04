@@ -208,7 +208,7 @@ def test_build_index_handles_errors_gracefully(temp_db_dir):
 
 def test_build_index_with_progress_display(temp_vault, temp_db_dir, capsys):
     """AC: 進捗表示が有効な場合、出力が生成されること"""
-    result = build_index(
+    build_index(
         vault_root=temp_vault,
         db_path=temp_db_dir,
         show_progress=True
@@ -222,7 +222,7 @@ def test_build_index_with_progress_display(temp_vault, temp_db_dir, capsys):
 
 def test_build_index_prints_statistics(temp_vault, temp_db_dir, capsys):
     """AC: 生成されたベクトル数をターミナルに表示すること"""
-    result = build_index(
+    build_index(
         vault_root=temp_vault,
         db_path=temp_db_dir,
         show_progress=True
