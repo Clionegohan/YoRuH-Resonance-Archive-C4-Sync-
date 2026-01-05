@@ -291,8 +291,6 @@ def test_delta_calculation():
 
 def test_thresholds_are_configurable():
     """AC: 時間閾値と差分閾値をクラス定数として定義し、将来的に調整可能にすること"""
-    detector = TimingDeltaSignalDetector()
-
     # Check that thresholds are defined as class constants
     assert hasattr(TimingDeltaSignalDetector, 'LONG_PAUSE_SECONDS')
     assert hasattr(TimingDeltaSignalDetector, 'MEDIUM_PAUSE_SECONDS')
