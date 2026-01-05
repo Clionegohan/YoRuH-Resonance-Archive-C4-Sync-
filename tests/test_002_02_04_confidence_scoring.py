@@ -101,13 +101,13 @@ def test_calculate_confidence_max_limit():
         StructuralSignal(type='horizontal_rule', position=20, pattern='---'),
         StructuralSignal(type='sentence_end', position=30, pattern='。'),
         TimingSignal(type='long_pause', elapsed_seconds=400),
-        TimingSignal(type='medium_pause', elapsed_seconds=150),  # 重複、無視される
+        TimingSignal(type='medium_pause', elapsed_seconds=150),
         DeltaSignal(type='large_delta', char_delta=150),
-        DeltaSignal(type='medium_delta', char_delta=50),  # 重複、無視される
-        DeltaSignal(type='small_delta', char_delta=15),  # 重複、無視される
+        DeltaSignal(type='medium_delta', char_delta=50),
+        DeltaSignal(type='small_delta', char_delta=15),
     ]
 
-    # 0.2 + 0.3 + 0.1 + 0.4 + 0.3 = 1.3 -> 上限1.0
+    # 0.2 + 0.3 + 0.1 + 0.4 + 0.2 + 0.3 + 0.2 + 0.1 = 1.6 → 上限1.0
     confidence = engine.calculate_confidence(signals)
     assert confidence == 1.0
 

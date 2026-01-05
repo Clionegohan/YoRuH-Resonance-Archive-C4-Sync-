@@ -3,7 +3,7 @@ Trigger Decision Engine for Resonance Archive System.
 
 Calculates confidence scores from multiple signals and determines if analysis should be triggered.
 """
-from typing import List, Union
+from typing import ClassVar, List, Union
 
 
 class TriggerDecisionEngine:
@@ -15,7 +15,7 @@ class TriggerDecisionEngine:
     """
 
     # Signal weights (adjustable for tuning)
-    WEIGHTS = {
+    WEIGHTS: ClassVar[dict[str, float]] = {
         # Structural signals
         'paragraph_break': 0.2,
         'horizontal_rule': 0.3,
@@ -32,7 +32,7 @@ class TriggerDecisionEngine:
     }
 
     # Confidence threshold for triggering analysis
-    CONFIDENCE_THRESHOLD = 0.6
+    CONFIDENCE_THRESHOLD: ClassVar[float] = 0.6
 
     def calculate_confidence(
         self,
