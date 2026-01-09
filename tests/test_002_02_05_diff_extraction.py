@@ -49,7 +49,7 @@ def test_extract_diff_when_previous_is_empty():
 
 
 def test_extract_diff_addition():
-    """AC: previous_textが存在する場合、追加部分（current_text[len(previous_text):]）を差分とする"""
+    """AC: previous_textが存在する場合、追加部分(current_text[len(previous_text):])を差分とする"""
     extractor = DiffExtractor()
 
     previous_text = "Hello"
@@ -74,7 +74,7 @@ def test_extract_diff_large_addition():
 
 
 def test_extract_diff_deletion_returns_empty():
-    """AC: 削除（current_textがprevious_textより短い）の場合、空文字列を返す"""
+    """AC: 削除(current_textがprevious_textより短い)の場合、空文字列を返す"""
     extractor = DiffExtractor()
 
     previous_text = "This is a long text"
@@ -115,24 +115,30 @@ def test_vectorize_diff_returns_vector():
 
 def test_vectorize_diff_empty_text_returns_none():
     """AC: 差分テキストが空の場合、vectorize_diff()はNoneを返すこと"""
-    extractor = DiffExtractor()
+    mock_client = Mock()
+    extractor = DiffExtractor(ollama_client=mock_client)
 
     vector = extractor.vectorize_diff("")
 
     assert vector is None
+    # embedは呼ばれないことを確認
+    mock_client.embed.assert_not_called()
 
 
 def test_vectorize_diff_whitespace_only_returns_none():
     """追加テスト: 空白のみの場合、Noneを返すこと"""
-    extractor = DiffExtractor()
+    mock_client = Mock()
+    extractor = DiffExtractor(ollama_client=mock_client)
 
     vector = extractor.vectorize_diff("   \n\t  ")
 
     assert vector is None
+    # embedは呼ばれないことを確認
+    mock_client.embed.assert_not_called()
 
 
 def test_vectorize_diff_retry_on_failure():
-    """AC: リトライロジック実装（最大3回、exponential backoff）"""
+    """AC: リトライロジック実装(最大3回、exponential backoff)"""
     mock_client = Mock()
     # 1回目と2回目は失敗、3回目で成功
     mock_client.embed.side_effect = [
@@ -204,7 +210,7 @@ def test_vectorize_diff_exponential_backoff():
         vector = extractor.vectorize_diff("Test text")
 
         assert vector is not None
-        # 2回のリトライで2回のsleep（1秒、2秒）
+        # 2回のリトライで2回のsleep(1秒、2秒)
         assert mock_sleep.call_count == 2
         mock_sleep.assert_any_call(1)  # 2^0
         mock_sleep.assert_any_call(2)  # 2^1
