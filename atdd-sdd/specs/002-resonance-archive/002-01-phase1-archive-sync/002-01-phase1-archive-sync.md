@@ -3,9 +3,9 @@ id: "002-01"
 epic_id: "002"
 epic_title: "Resonance Archive システム構築"
 title: "Phase 1 - Archive Synchronization"
-status: "pending"
+status: "completed"
 created_at: "2026-01-02"
-updated_at: "2026-01-02"
+updated_at: "2026-01-10"
 ---
 
 # Story: Phase 1 - Archive Synchronization（記憶同期）
@@ -25,23 +25,23 @@ updated_at: "2026-01-02"
 
 ## Acceptance Criteria
 
-- [ ] **THE SYSTEM SHALL** Vault全体（01_diary, 02_notes, 07_works）をスキャンし、全`.md`ファイルを取得すること
+- [x] **THE SYSTEM SHALL** Vault全体（01_diary, 02_notes, 07_works）をスキャンし、全`.md`ファイルを取得すること
 
-- [ ] **THE SYSTEM SHALL** テンプレートファイル（00_templates）および除外パターンに一致するファイルを検索対象から除外すること
+- [x] **THE SYSTEM SHALL** テンプレートファイル（00_templates）および除外パターンに一致するファイルを検索対象から除外すること
 
-- [ ] **WHEN** ファイルのテキスト長が2000文字を超える場合
+- [x] **WHEN** ファイルのテキスト長が2000文字を超える場合
       **THEN** システムはLLM（llama3.1）を用いて500〜800字に要約すること
       **AND** 要約テキストをLevel 1ベクトルとして生成すること
 
-- [ ] **THE SYSTEM SHALL** 全ファイルのテキストを段落・文単位で分割し、最大250文字のチャンクを生成すること
+- [x] **THE SYSTEM SHALL** 全ファイルのテキストを段落・文単位で分割し、最大250文字のチャンクを生成すること
 
-- [ ] **THE SYSTEM SHALL** 各チャンクをmxbai-embed-largeを用いてベクトル化し、Level 2ベクトルとして生成すること
+- [x] **THE SYSTEM SHALL** 各チャンクをmxbai-embed-largeを用いてベクトル化し、Level 2ベクトルとして生成すること
 
-- [ ] **THE SYSTEM SHALL** 生成した全ベクトル（Level 1 + Level 2）をメタデータ付きでChromaDBに永続化すること
+- [x] **THE SYSTEM SHALL** 生成した全ベクトル（Level 1 + Level 2）をメタデータ付きでChromaDBに永続化すること
 
-- [ ] **THE SYSTEM SHALL** 初回インデックス化を5分以内に完了すること（M4 Pro環境）
+- [x] **THE SYSTEM SHALL** 初回インデックス化を5分以内に完了すること（M4 Pro環境）
 
-- [ ] **THE SYSTEM SHALL** インデックス化完了時、生成されたベクトル数をターミナルに表示すること
+- [x] **THE SYSTEM SHALL** インデックス化完了時、生成されたベクトル数をターミナルに表示すること
 
 ## 関連Subtask
 
