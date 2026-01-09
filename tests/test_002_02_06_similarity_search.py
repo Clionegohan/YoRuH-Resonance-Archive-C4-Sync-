@@ -47,7 +47,7 @@ def test_search_level1_filters_summary():
     searcher = SimilaritySearcher(chromadb_indexer=mock_indexer)
     query_vector = [0.1] * 1024
 
-    results = searcher.search_level1(query_vector)
+    _ = searcher.search_level1(query_vector)
 
     # Verify query was called with correct parameters
     mock_collection.query.assert_called_once()
@@ -99,7 +99,7 @@ def test_search_level2_filters_chunk():
     searcher = SimilaritySearcher(chromadb_indexer=mock_indexer)
     query_vector = [0.1] * 1024
 
-    results = searcher.search_level2(query_vector)
+    _ = searcher.search_level2(query_vector)
 
     # Verify query was called with correct parameters
     mock_collection.query.assert_called_once()
@@ -193,7 +193,7 @@ def test_search_level1_handles_error():
 
         assert results == []
         # Verify error was logged
-        assert mock_logger.error.called
+        assert mock_logger.exception.called
 
 
 def test_search_level2_handles_error():
@@ -214,7 +214,7 @@ def test_search_level2_handles_error():
 
         assert results == []
         # Verify error was logged
-        assert mock_logger.error.called
+        assert mock_logger.exception.called
 
 
 def test_search_level1_empty_results():

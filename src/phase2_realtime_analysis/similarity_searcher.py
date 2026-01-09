@@ -56,8 +56,8 @@ class SimilaritySearcher:
             # Format results
             return self._format_results(results)
 
-        except Exception as e:
-            logger.error(f"Level 1 search failed: {e}")
+        except Exception:
+            logger.exception("Level 1 search failed")
             return []
 
     def search_level2(
@@ -95,8 +95,8 @@ class SimilaritySearcher:
             # Format results
             return self._format_results(results)
 
-        except Exception as e:
-            logger.error(f"Level 2 search failed: {e}")
+        except Exception:
+            logger.exception("Level 2 search failed")
             return []
 
     def _format_results(
