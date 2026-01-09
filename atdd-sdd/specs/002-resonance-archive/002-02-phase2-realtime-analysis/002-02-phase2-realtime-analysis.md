@@ -3,9 +3,9 @@ id: "002-02"
 epic_id: "002"
 epic_title: "Resonance Archive システム構築"
 title: "Phase 2 - Real-time Resonance Analysis"
-status: "pending"
+status: "completed"
 created_at: "2026-01-02"
-updated_at: "2026-01-02"
+updated_at: "2026-01-10"
 ---
 
 # Story: Phase 2 - Real-time Resonance Analysis（即時共鳴分析）
@@ -29,26 +29,26 @@ updated_at: "2026-01-02"
 
 ## Acceptance Criteria
 
-- [ ] **THE SYSTEM SHALL** 当日の日記ファイル（`01_diary/YYYY/YYYY-MM-dd.md`）をWatchdogで監視すること
+- [x] **THE SYSTEM SHALL** 当日の日記ファイル（`01_diary/YYYY/YYYY-MM-dd.md`）をWatchdogで監視すること
 
-- [ ] **WHEN** ファイルが保存された際
+- [x] **WHEN** ファイルが保存された際
       **GIVEN** マルチシグナル判定で確信度が0.6以上の場合
       **THEN** システムは解析を実行すること
 
-- [ ] **THE SYSTEM SHALL** 構造的シグナル（段落区切り、水平線、文末）を検知すること
+- [x] **THE SYSTEM SHALL** 構造的シグナル（段落区切り、水平線、文末）を検知すること
 
-- [ ] **THE SYSTEM SHALL** 時間シグナル（long_pause, medium_pause）を検知すること
+- [x] **THE SYSTEM SHALL** 時間シグナル（long_pause, medium_pause）を検知すること
 
-- [ ] **THE SYSTEM SHALL** 差分シグナル（追加文字数）を検知すること
+- [x] **THE SYSTEM SHALL** 差分シグナル（追加文字数）を検知すること
 
-- [ ] **THE SYSTEM SHALL** 複数シグナルから確信度スコアを計算すること
+- [x] **THE SYSTEM SHALL** 複数シグナルから確信度スコアを計算すること
 
-- [ ] **WHEN** トリガー条件を満たした場合
+- [x] **WHEN** トリガー条件を満たした場合
       **THEN** システムは2秒のデバウンス後に解析を実行すること
 
-- [ ] **THE SYSTEM SHALL** ChromaDBでLevel 1検索（summary, top_k=5）とLevel 2検索（chunk, top_k=10）を実行すること
+- [x] **THE SYSTEM SHALL** ChromaDBでLevel 1検索（summary, top_k=5）とLevel 2検索（chunk, top_k=10）を実行すること
 
-- [ ] **THE SYSTEM SHALL** 検索結果を統合し、上位3件を抽出すること
+- [x] **THE SYSTEM SHALL** 検索結果を統合し、上位3件を抽出すること
 
 ## 関連Subtask
 
