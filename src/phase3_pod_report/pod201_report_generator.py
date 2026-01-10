@@ -5,8 +5,14 @@ Generates Pod201-style reports from similarity search results using LLM.
 """
 import re
 from datetime import datetime
+from io import StringIO
 from typing import List, Dict, Any, Optional
 from pathlib import Path
+
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich import box
 
 
 class Pod201ReportGenerator:
@@ -237,3 +243,89 @@ class Pod201ReportGenerator:
             formatted_lines.append("")  # Empty line between results
 
         return "\n".join(formatted_lines)
+
+    def format_rich_output(self, search_results: List[Dict[str, Any]]) -> str:
+        """
+        Format search results using Rich library for enhanced terminal output.
+
+        Args:
+            search_results: List of search result dictionaries
+
+        Returns:
+            Rich-formatted output string with colors, tables, and panels
+
+        Implementation:
+            - Uses rich.console.Console for rendering
+            - Creates Panel for header with result count
+            - Creates Table with columns: ID, Similarity Bar, %, Distance, Date, Metadata
+            - Applies color coding: green (≥80%), yellow (50-79%), red (<50%)
+            - Captures output to StringIO for string return
+        """
+        # Create string buffer to capture rich output
+        string_buffer = StringIO()
+        console = Console(file=string_buffer, force_terminal=True, width=120)
+
+        # Create header panel
+        result_count = len(search_results)
+        header_text = f"検索結果: {result_count}件"
+        panel = Panel(header_text, title="Pod201 類似検索レポート", border_style="cyan")
+        console.print(panel)
+
+        if not search_results:
+            console.print("[yellow]検索結果: 0件（該当データ無し）[/yellow]")
+            return string_buffer.getvalue()
+
+        # Create results table
+        table = Table(title="類似検索結果", box=box.ROUNDED, show_header=True, header_style="bold magenta")
+        table.add_column("ID", style="cyan", no_wrap=True)
+        table.add_column("類似度バー", justify="center")
+        table.add_column("%", justify="right", style="bold")
+        table.add_column("Distance", justify="right")
+        table.add_column("日付", style="dim")
+        table.add_column("メタデータ", style="dim")
+
+        for result in search_results:
+            result_id = result.get("id", "unknown")
+            distance = result.get("distance")
+            distance = distance if isinstance(distance, (int, float)) else 0.0
+            metadata = result.get("metadata") or {}
+            if not isinstance(metadata, dict):
+                metadata = {}
+
+            # Calculate similarity and format bar
+            similarity_percentage = self._calculate_similarity_percentage(distance)
+            similarity_bar = self._format_similarity_bar(similarity_percentage)
+
+            # Apply color coding based on similarity
+            if similarity_percentage >= 80:
+                bar_color = "green"
+            elif similarity_percentage >= 50:
+                bar_color = "yellow"
+            else:
+                bar_color = "red"
+
+            colored_bar = f"[{bar_color}]{similarity_bar}[/{bar_color}]"
+
+            # Extract date
+            date = self._extract_date(metadata)
+            date_str = date if date else "-"
+
+            # Format other metadata
+            meta_parts = []
+            for key, value in metadata.items():
+                if key not in ["date", "created_at", "file"]:
+                    meta_parts.append(f"{key}: {value}")
+            meta_str = ", ".join(meta_parts) if meta_parts else "-"
+
+            # Add row to table
+            table.add_row(
+                result_id,
+                colored_bar,
+                f"{similarity_percentage}%",
+                f"{distance:.4f}",
+                date_str,
+                meta_str
+            )
+
+        console.print(table)
+        return string_buffer.getvalue()
