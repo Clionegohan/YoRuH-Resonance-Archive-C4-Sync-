@@ -191,3 +191,24 @@ def test_extract_date_validates_calendar_dates():
         for metadata in test_cases:
             date = generator._extract_date(metadata)
             assert date is None, f"Should reject invalid date in {metadata}"
+
+
+def test_extract_date_handles_non_string_file_metadata():
+    """追加テスト: 非文字列型のfileメタデータの処理（TypeError防止）"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        # Test non-string file values (should return None without raising TypeError)
+        test_cases = [
+            {"file": 12345, "type": "summary"},  # Integer
+            {"file": None, "type": "chunk"},  # None
+            {"file": {"path": "notes/2026-01-10.md"}, "type": "summary"},  # Dict
+            {"file": ["notes", "2026-01-10.md"], "type": "chunk"},  # List
+        ]
+
+        for metadata in test_cases:
+            date = generator._extract_date(metadata)
+            assert date is None, f"Should handle non-string file value in {metadata}"

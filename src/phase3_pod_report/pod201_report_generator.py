@@ -127,13 +127,16 @@ class Pod201ReportGenerator:
 
         # Priority 3: Extract from 'file' path
         if "file" in metadata:
-            file_path = metadata["file"]
-            # Match YYYY-MM-DD pattern in file path
-            match = re.search(r'\d{4}-\d{2}-\d{2}', file_path)
-            if match:
-                validated = validate_date(match.group(0))
-                if validated:
-                    return validated
+            file_value = metadata["file"]
+            # Guard against non-string/bytes types
+            if isinstance(file_value, (str, bytes)):
+                file_path = file_value if isinstance(file_value, str) else file_value.decode('utf-8', errors='ignore')
+                # Match YYYY-MM-DD pattern in file path
+                match = re.search(r'\d{4}-\d{2}-\d{2}', file_path)
+                if match:
+                    validated = validate_date(match.group(0))
+                    if validated:
+                        return validated
 
         return None
 
