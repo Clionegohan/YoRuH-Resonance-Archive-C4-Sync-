@@ -161,8 +161,11 @@ class Pod201ReportGenerator:
 
         for i, result in enumerate(search_results, 1):
             result_id = result.get("id", "unknown")
-            distance = result.get("distance", 0.0)
-            metadata = result.get("metadata", {})
+            distance = result.get("distance")
+            distance = distance if isinstance(distance, (int, float)) else 0.0
+            metadata = result.get("metadata") or {}
+            if not isinstance(metadata, dict):
+                metadata = {}
 
             formatted_lines.append(f"[{i}] ID: {result_id}")
             formatted_lines.append(f"    類似度距離: {distance:.4f}")

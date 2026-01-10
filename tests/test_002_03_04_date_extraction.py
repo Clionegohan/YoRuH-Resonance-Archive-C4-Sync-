@@ -212,3 +212,48 @@ def test_extract_date_handles_non_string_file_metadata():
         for metadata in test_cases:
             date = generator._extract_date(metadata)
             assert date is None, f"Should handle non-string file value in {metadata}"
+
+
+def test_format_search_results_handles_invalid_distance():
+    """追加テスト: 無効なdistance値の処理（TypeError防止）"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        # Test various invalid distance values (should default to 0.0)
+        test_cases = [
+            [{"id": "id1", "distance": None, "metadata": {"type": "summary"}}],  # None
+            [{"id": "id2", "distance": "invalid", "metadata": {"type": "chunk"}}],  # String
+            [{"id": "id3", "distance": [0.5], "metadata": {"type": "summary"}}],  # List
+            [{"id": "id4", "metadata": {"type": "chunk"}}],  # Missing distance key
+        ]
+
+        for search_results in test_cases:
+            result = generator._format_search_results(search_results)
+            # Should format without raising TypeError
+            assert "類似度距離: 0.0000" in result, f"Should default to 0.0 for {search_results}"
+
+
+def test_format_search_results_handles_invalid_metadata():
+    """追加テスト: 無効なmetadata値の処理（TypeError防止）"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        # Test various invalid metadata values (should default to {})
+        test_cases = [
+            [{"id": "id1", "distance": 0.1, "metadata": None}],  # None
+            [{"id": "id2", "distance": 0.2, "metadata": "invalid"}],  # String
+            [{"id": "id3", "distance": 0.3, "metadata": [{"type": "summary"}]}],  # List
+            [{"id": "id4", "distance": 0.4}],  # Missing metadata key
+        ]
+
+        for search_results in test_cases:
+            result = generator._format_search_results(search_results)
+            # Should format without raising TypeError on .items() or .get()
+            assert "ID:" in result, f"Should handle invalid metadata in {search_results}"
+            assert "類似度距離:" in result
