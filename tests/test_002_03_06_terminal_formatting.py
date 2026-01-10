@@ -68,8 +68,8 @@ def test_format_rich_output_applies_color_coding():
 
         search_results = [
             {"id": "high", "distance": 0.1, "metadata": {}},   # 90% - green
-            {"id": "mid", "distance": 0.6, "metadata": {}},    # 40% - red
-            {"id": "low", "distance": 0.3, "metadata": {}},    # 70% - yellow
+            {"id": "low", "distance": 0.6, "metadata": {}},    # 40% - red
+            {"id": "mid", "distance": 0.3, "metadata": {}},    # 70% - yellow
         ]
 
         output = generator.format_rich_output(search_results)
