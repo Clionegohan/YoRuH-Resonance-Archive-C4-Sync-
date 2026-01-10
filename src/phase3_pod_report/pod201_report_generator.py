@@ -7,7 +7,7 @@ import re
 import logging
 from datetime import datetime
 from io import StringIO
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pathlib import Path
 
 from rich.console import Console
