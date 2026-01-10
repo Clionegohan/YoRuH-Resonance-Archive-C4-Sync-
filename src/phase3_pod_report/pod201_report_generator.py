@@ -4,6 +4,7 @@ Pod201 Report Generator for Resonance Archive System.
 Generates Pod201-style reports from similarity search results using LLM.
 """
 import re
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
@@ -102,14 +103,27 @@ class Pod201ReportGenerator:
             - Priority: date > created_at > file (path extraction)
             - Supports YYYY-MM-DD format
             - Extracts from file paths using regex
+            - Validates dates using datetime.strptime
         """
+        def validate_date(date_str: str) -> Optional[str]:
+            """Validate date string using datetime parsing."""
+            try:
+                datetime.strptime(date_str, "%Y-%m-%d")
+                return date_str
+            except (ValueError, TypeError):
+                return None
+
         # Priority 1: Check 'date' key
         if "date" in metadata:
-            return metadata["date"]
+            validated = validate_date(metadata["date"])
+            if validated:
+                return validated
 
         # Priority 2: Check 'created_at' key
         if "created_at" in metadata:
-            return metadata["created_at"]
+            validated = validate_date(metadata["created_at"])
+            if validated:
+                return validated
 
         # Priority 3: Extract from 'file' path
         if "file" in metadata:
@@ -117,7 +131,9 @@ class Pod201ReportGenerator:
             # Match YYYY-MM-DD pattern in file path
             match = re.search(r'\d{4}-\d{2}-\d{2}', file_path)
             if match:
-                return match.group(0)
+                validated = validate_date(match.group(0))
+                if validated:
+                    return validated
 
         return None
 
@@ -155,7 +171,7 @@ class Pod201ReportGenerator:
 
             # Add other metadata information
             for key, value in metadata.items():
-                if key not in ["date", "created_at", "file"]:  # Skip already displayed
+                if key not in ["date", "created_at", "file"]:  # Skip - file used only for date extraction, not for display
                     formatted_lines.append(f"    {key}: {value}")
 
             formatted_lines.append("")  # Empty line between results

@@ -113,8 +113,8 @@ def test_generate_report_includes_date_info():
         call_args = mock_ollama.generate.call_args
         prompt = call_args[1]["prompt"]
 
-        # Date should appear somewhere in the prompt
-        assert "2026-01-10" in prompt or "date" in prompt.lower()
+        # Date should appear in the exact format produced by _format_search_results
+        assert "日付: 2026-01-10" in prompt
 
 
 def test_generate_report_continues_without_date():
@@ -170,3 +170,24 @@ def test_extract_date_handles_invalid_format():
 
         # Should return None for invalid format
         assert date is None
+
+
+def test_extract_date_validates_calendar_dates():
+    """追加テスト: 無効なカレンダー日付の処理（YYYY-MM-DDパターンにマッチするが実在しない日付）"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        # Test invalid dates that match YYYY-MM-DD pattern but are not real calendar dates
+        test_cases = [
+            {"date": "2026-13-01"},  # Invalid month (13)
+            {"date": "2026-02-30"},  # Invalid day for February
+            {"created_at": "2026-00-15"},  # Invalid month (00)
+            {"file": "notes/2026-04-31.md"},  # April only has 30 days
+        ]
+
+        for metadata in test_cases:
+            date = generator._extract_date(metadata)
+            assert date is None, f"Should reject invalid date in {metadata}"
