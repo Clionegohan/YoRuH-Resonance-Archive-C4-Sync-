@@ -3,6 +3,7 @@ Pod201 Report Generator for Resonance Archive System.
 
 Generates Pod201-style reports from similarity search results using LLM.
 """
+import re
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
@@ -87,6 +88,39 @@ class Pod201ReportGenerator:
         except Exception:
             return None
 
+    def _extract_date(self, metadata: Dict[str, Any]) -> Optional[str]:
+        """
+        Extract date information from metadata.
+
+        Args:
+            metadata: Metadata dictionary from search result
+
+        Returns:
+            Date string (YYYY-MM-DD format) or None if not found
+
+        Implementation:
+            - Priority: date > created_at > file (path extraction)
+            - Supports YYYY-MM-DD format
+            - Extracts from file paths using regex
+        """
+        # Priority 1: Check 'date' key
+        if "date" in metadata:
+            return metadata["date"]
+
+        # Priority 2: Check 'created_at' key
+        if "created_at" in metadata:
+            return metadata["created_at"]
+
+        # Priority 3: Extract from 'file' path
+        if "file" in metadata:
+            file_path = metadata["file"]
+            # Match YYYY-MM-DD pattern in file path
+            match = re.search(r'\d{4}-\d{2}-\d{2}', file_path)
+            if match:
+                return match.group(0)
+
+        return None
+
     def _format_search_results(
         self,
         search_results: List[Dict[str, Any]]
@@ -114,9 +148,15 @@ class Pod201ReportGenerator:
             formatted_lines.append(f"[{i}] ID: {result_id}")
             formatted_lines.append(f"    類似度距離: {distance:.4f}")
 
-            # Add metadata information
+            # Extract and display date if available
+            date = self._extract_date(metadata)
+            if date:
+                formatted_lines.append(f"    日付: {date}")
+
+            # Add other metadata information
             for key, value in metadata.items():
-                formatted_lines.append(f"    {key}: {value}")
+                if key not in ["date", "created_at", "file"]:  # Skip already displayed
+                    formatted_lines.append(f"    {key}: {value}")
 
             formatted_lines.append("")  # Empty line between results
 
