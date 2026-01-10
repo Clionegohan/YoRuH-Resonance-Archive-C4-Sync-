@@ -95,7 +95,7 @@ def test_returns_generated_report():
 
 
 def test_returns_none_on_generation_error():
-    """AC: 生成エラー時にNoneを返すこと"""
+    """AC: 生成エラー時にフォールバックレポートを返すこと（002-03-07で変更）"""
     persona_content = "報告：Pod201"
     search_results = [
         {"id": "id1", "distance": 0.1, "metadata": {"type": "summary"}}
@@ -108,7 +108,10 @@ def test_returns_none_on_generation_error():
         generator = Pod201ReportGenerator(ollama_client=mock_ollama)
         result = generator.generate_report(search_results)
 
-        assert result is None
+        # Should return fallback report, not None (updated in 002-03-07)
+        assert result is not None
+        assert isinstance(result, str)
+        assert "警告" in result or "失敗" in result
 
 
 def test_handles_empty_search_results():
@@ -161,9 +164,11 @@ def test_formats_search_results_in_prompt():
 
 
 def test_persona_file_not_found_raises_error():
-    """追加テスト: ペルソナファイルが存在しない場合はエラー"""
+    """追加テスト: ペルソナファイルが存在しない場合はデフォルトペルソナを使用（002-03-07で変更）"""
     with patch("builtins.open", side_effect=FileNotFoundError()):
         mock_ollama = Mock()
 
-        with pytest.raises(FileNotFoundError):
-            Pod201ReportGenerator(ollama_client=mock_ollama)
+        # Should not raise error, use default persona instead (updated in 002-03-07)
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+        assert generator.persona_prompt is not None
+        assert len(generator.persona_prompt) > 0
