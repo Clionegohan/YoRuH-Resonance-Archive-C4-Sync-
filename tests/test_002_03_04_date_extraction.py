@@ -1,0 +1,259 @@
+"""
+Test for Subtask 002-03-04: 日付情報抽出実装
+
+このテストは承認されたAcceptance Criteriaから導出されています。
+"""
+import pytest
+from unittest.mock import Mock, patch, mock_open
+from src.phase3_pod_report.pod201_report_generator import Pod201ReportGenerator
+
+
+def test_extract_date_method_exists():
+    """AC: _extract_date()メソッドを提供すること"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        assert hasattr(generator, '_extract_date')
+        assert callable(generator._extract_date)
+
+
+def test_extract_date_from_date_key():
+    """AC: メタデータのdateキーから日付を抽出"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        metadata = {"date": "2026-01-10", "type": "summary"}
+        date = generator._extract_date(metadata)
+
+        assert date == "2026-01-10"
+
+
+def test_extract_date_from_file_path():
+    """AC: ファイルパス内の日付を抽出（YYYY-MM-DD形式）"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        metadata = {"file": "01_diary/2026/2026-01-10.md", "type": "summary"}
+        date = generator._extract_date(metadata)
+
+        assert date == "2026-01-10"
+
+
+def test_extract_date_from_created_at():
+    """AC: created_atキーから日付を抽出"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        metadata = {"created_at": "2026-01-09", "type": "chunk"}
+        date = generator._extract_date(metadata)
+
+        assert date == "2026-01-09"
+
+
+def test_extract_date_returns_none_when_no_date():
+    """AC: 日付が見つからない場合はNoneを返す"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        metadata = {"type": "summary", "seq": 1}
+        date = generator._extract_date(metadata)
+
+        assert date is None
+
+
+def test_extract_date_priority():
+    """追加テスト: 複数の日付キーがある場合の優先順位（date > created_at > file）"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        metadata = {
+            "date": "2026-01-10",
+            "created_at": "2026-01-09",
+            "file": "01_diary/2026/2026-01-08.md"
+        }
+        date = generator._extract_date(metadata)
+
+        # dateキーが最優先
+        assert date == "2026-01-10"
+
+
+def test_generate_report_includes_date_info():
+    """AC: 抽出した日付情報をレポートプロンプトに含めること"""
+    persona_content = "報告：Pod201"
+    search_results = [
+        {"id": "id1", "distance": 0.1, "metadata": {"type": "summary", "date": "2026-01-10"}}
+    ]
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        mock_ollama.generate.return_value = "報告：2026-01-10のデータを分析"
+
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+        _ = generator.generate_report(search_results)
+
+        # Verify that date info is included in the prompt
+        call_args = mock_ollama.generate.call_args
+        prompt = call_args[1]["prompt"]
+
+        # Date should appear in the exact format produced by _format_search_results
+        assert "日付: 2026-01-10" in prompt
+
+
+def test_generate_report_continues_without_date():
+    """AC: 日付情報がない場合でもレポート生成を継続すること"""
+    persona_content = "報告：Pod201"
+    search_results = [
+        {"id": "id1", "distance": 0.1, "metadata": {"type": "summary"}}
+    ]
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        mock_ollama.generate.return_value = "報告：データ分析完了"
+
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+        result = generator.generate_report(search_results)
+
+        # Should still generate report even without date
+        assert result == "報告：データ分析完了"
+        mock_ollama.generate.assert_called_once()
+
+
+def test_extract_date_from_complex_file_path():
+    """追加テスト: 複雑なファイルパスから日付を抽出"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        # Different file path patterns
+        test_cases = [
+            ("01_diary/2026/2026-01-10.md", "2026-01-10"),
+            ("02_notes/2025-12-25_memo.md", "2025-12-25"),
+            ("07_works/project_2026-01-05.txt", "2026-01-05"),
+        ]
+
+        for file_path, expected_date in test_cases:
+            metadata = {"file": file_path}
+            date = generator._extract_date(metadata)
+            assert date == expected_date, f"Failed for {file_path}"
+
+
+def test_extract_date_handles_invalid_format():
+    """追加テスト: 無効な日付フォーマットの処理"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        metadata = {"file": "notes/invalid-date.md", "type": "summary"}
+        date = generator._extract_date(metadata)
+
+        # Should return None for invalid format
+        assert date is None
+
+
+def test_extract_date_validates_calendar_dates():
+    """追加テスト: 無効なカレンダー日付の処理（YYYY-MM-DDパターンにマッチするが実在しない日付）"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        # Test invalid dates that match YYYY-MM-DD pattern but are not real calendar dates
+        test_cases = [
+            {"date": "2026-13-01"},  # Invalid month (13)
+            {"date": "2026-02-30"},  # Invalid day for February
+            {"created_at": "2026-00-15"},  # Invalid month (00)
+            {"file": "notes/2026-04-31.md"},  # April only has 30 days
+        ]
+
+        for metadata in test_cases:
+            date = generator._extract_date(metadata)
+            assert date is None, f"Should reject invalid date in {metadata}"
+
+
+def test_extract_date_handles_non_string_file_metadata():
+    """追加テスト: 非文字列型のfileメタデータの処理（TypeError防止）"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        # Test non-string file values (should return None without raising TypeError)
+        test_cases = [
+            {"file": 12345, "type": "summary"},  # Integer
+            {"file": None, "type": "chunk"},  # None
+            {"file": {"path": "notes/2026-01-10.md"}, "type": "summary"},  # Dict
+            {"file": ["notes", "2026-01-10.md"], "type": "chunk"},  # List
+        ]
+
+        for metadata in test_cases:
+            date = generator._extract_date(metadata)
+            assert date is None, f"Should handle non-string file value in {metadata}"
+
+
+def test_format_search_results_handles_invalid_distance():
+    """追加テスト: 無効なdistance値の処理（TypeError防止）"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        # Test various invalid distance values (should default to 0.0)
+        test_cases = [
+            [{"id": "id1", "distance": None, "metadata": {"type": "summary"}}],  # None
+            [{"id": "id2", "distance": "invalid", "metadata": {"type": "chunk"}}],  # String
+            [{"id": "id3", "distance": [0.5], "metadata": {"type": "summary"}}],  # List
+            [{"id": "id4", "metadata": {"type": "chunk"}}],  # Missing distance key
+        ]
+
+        for search_results in test_cases:
+            result = generator._format_search_results(search_results)
+            # Should format without raising TypeError
+            assert "類似度距離: 0.0000" in result, f"Should default to 0.0 for {search_results}"
+
+
+def test_format_search_results_handles_invalid_metadata():
+    """追加テスト: 無効なmetadata値の処理（TypeError防止）"""
+    persona_content = "報告：Pod201"
+
+    with patch("builtins.open", mock_open(read_data=persona_content)):
+        mock_ollama = Mock()
+        generator = Pod201ReportGenerator(ollama_client=mock_ollama)
+
+        # Test various invalid metadata values (should default to {})
+        test_cases = [
+            [{"id": "id1", "distance": 0.1, "metadata": None}],  # None
+            [{"id": "id2", "distance": 0.2, "metadata": "invalid"}],  # String
+            [{"id": "id3", "distance": 0.3, "metadata": [{"type": "summary"}]}],  # List
+            [{"id": "id4", "distance": 0.4}],  # Missing metadata key
+        ]
+
+        for search_results in test_cases:
+            result = generator._format_search_results(search_results)
+            # Should format without raising TypeError on .items() or .get()
+            assert "ID:" in result, f"Should handle invalid metadata in {search_results}"
+            assert "類似度距離:" in result

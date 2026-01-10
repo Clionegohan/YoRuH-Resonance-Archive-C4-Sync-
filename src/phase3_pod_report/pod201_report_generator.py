@@ -3,6 +3,8 @@ Pod201 Report Generator for Resonance Archive System.
 
 Generates Pod201-style reports from similarity search results using LLM.
 """
+import re
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
@@ -87,6 +89,57 @@ class Pod201ReportGenerator:
         except Exception:
             return None
 
+    def _extract_date(self, metadata: Dict[str, Any]) -> Optional[str]:
+        """
+        Extract date information from metadata.
+
+        Args:
+            metadata: Metadata dictionary from search result
+
+        Returns:
+            Date string (YYYY-MM-DD format) or None if not found
+
+        Implementation:
+            - Priority: date > created_at > file (path extraction)
+            - Supports YYYY-MM-DD format
+            - Extracts from file paths using regex
+            - Validates dates using datetime.strptime
+        """
+        def validate_date(date_str: str) -> Optional[str]:
+            """Validate date string using datetime parsing."""
+            try:
+                datetime.strptime(date_str, "%Y-%m-%d")
+                return date_str
+            except (ValueError, TypeError):
+                return None
+
+        # Priority 1: Check 'date' key
+        if "date" in metadata:
+            validated = validate_date(metadata["date"])
+            if validated:
+                return validated
+
+        # Priority 2: Check 'created_at' key
+        if "created_at" in metadata:
+            validated = validate_date(metadata["created_at"])
+            if validated:
+                return validated
+
+        # Priority 3: Extract from 'file' path
+        if "file" in metadata:
+            file_value = metadata["file"]
+            # Guard against non-string/bytes types
+            if isinstance(file_value, (str, bytes)):
+                file_path = file_value if isinstance(file_value, str) else file_value.decode('utf-8', errors='ignore')
+                # Match YYYY-MM-DD pattern in file path
+                match = re.search(r'\d{4}-\d{2}-\d{2}', file_path)
+                if match:
+                    validated = validate_date(match.group(0))
+                    if validated:
+                        return validated
+
+        return None
+
     def _format_search_results(
         self,
         search_results: List[Dict[str, Any]]
@@ -108,15 +161,24 @@ class Pod201ReportGenerator:
 
         for i, result in enumerate(search_results, 1):
             result_id = result.get("id", "unknown")
-            distance = result.get("distance", 0.0)
-            metadata = result.get("metadata", {})
+            distance = result.get("distance")
+            distance = distance if isinstance(distance, (int, float)) else 0.0
+            metadata = result.get("metadata") or {}
+            if not isinstance(metadata, dict):
+                metadata = {}
 
             formatted_lines.append(f"[{i}] ID: {result_id}")
             formatted_lines.append(f"    類似度距離: {distance:.4f}")
 
-            # Add metadata information
+            # Extract and display date if available
+            date = self._extract_date(metadata)
+            if date:
+                formatted_lines.append(f"    日付: {date}")
+
+            # Add other metadata information
             for key, value in metadata.items():
-                formatted_lines.append(f"    {key}: {value}")
+                if key not in ["date", "created_at", "file"]:  # Skip - file used only for date extraction, not for display
+                    formatted_lines.append(f"    {key}: {value}")
 
             formatted_lines.append("")  # Empty line between results
 
