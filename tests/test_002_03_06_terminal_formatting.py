@@ -35,7 +35,7 @@ def test_format_rich_output_includes_header():
 
         # Should include "Pod201" and result count
         assert "Pod201" in output
-        assert "1" in output  # Result count
+        assert "1件" in output  # Result count with unit
 
 
 def test_format_rich_output_includes_table():
@@ -54,7 +54,7 @@ def test_format_rich_output_includes_table():
 
         # Should include table-like structure with key information
         assert "id1" in output
-        assert "80" in output  # Similarity percentage
+        assert "80%" in output  # Similarity percentage with symbol
         assert "2026-01-10" in output
 
 
@@ -95,7 +95,7 @@ def test_format_rich_output_handles_empty_results():
         output = generator.format_rich_output(search_results)
 
         # Should handle empty results gracefully
-        assert "0" in output or "無し" in output or "No" in output.lower()
+        assert "0件" in output or "該当データ無し" in output
 
 
 def test_format_rich_output_multiple_results():
