@@ -140,6 +140,56 @@ class Pod201ReportGenerator:
 
         return None
 
+    def _calculate_similarity_percentage(self, distance: float) -> int:
+        """
+        Calculate similarity percentage from distance value.
+
+        Args:
+            distance: Distance value from ChromaDB search (0.0 = perfect match, 1.0 = no similarity)
+
+        Returns:
+            Similarity percentage (0-100)
+
+        Implementation:
+            - Formula: similarity = (1 - distance) * 100
+            - Clamps negative values and values > 1.0 to 0%
+            - Returns integer percentage
+        """
+        # Clamp out-of-range values
+        if distance < 0 or distance > 1.0:
+            return 0
+
+        # Calculate similarity percentage
+        similarity = (1 - distance) * 100
+        return round(similarity)
+
+    def _format_similarity_bar(self, percentage: int) -> str:
+        """
+        Format similarity percentage as a visual progress bar.
+
+        Args:
+            percentage: Similarity percentage (0-100)
+
+        Returns:
+            Visual bar string like "[████████░░] 80%"
+
+        Implementation:
+            - Uses Unicode block characters: █ (filled), ░ (empty)
+            - Bar length: 10 characters (10% increments)
+            - Format: [bar]
+            - Clamps percentage to valid range for defensive coding
+        """
+        # Clamp to valid range (defensive coding)
+        percentage = max(0, min(100, percentage))
+
+        # Calculate number of filled blocks (out of 10)
+        filled_blocks = percentage // 10
+        empty_blocks = 10 - filled_blocks
+
+        # Build bar string
+        bar = "█" * filled_blocks + "░" * empty_blocks
+        return f"[{bar}]"
+
     def _format_search_results(
         self,
         search_results: List[Dict[str, Any]]
@@ -167,8 +217,12 @@ class Pod201ReportGenerator:
             if not isinstance(metadata, dict):
                 metadata = {}
 
+            # Calculate similarity and format visual bar
+            similarity_percentage = self._calculate_similarity_percentage(distance)
+            similarity_bar = self._format_similarity_bar(similarity_percentage)
+
             formatted_lines.append(f"[{i}] ID: {result_id}")
-            formatted_lines.append(f"    類似度距離: {distance:.4f}")
+            formatted_lines.append(f"    類似度: {similarity_bar} {similarity_percentage}% (distance: {distance:.4f})")
 
             # Extract and display date if available
             date = self._extract_date(metadata)
