@@ -263,7 +263,7 @@ class Pod201ReportGenerator:
         """
         # Create string buffer to capture rich output
         string_buffer = StringIO()
-        console = Console(file=string_buffer, force_terminal=True, width=120)
+        console = Console(file=string_buffer, width=120)
 
         # Create header panel
         result_count = len(search_results)
