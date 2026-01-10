@@ -3,7 +3,6 @@ Test for Subtask 002-03-05: 類似度スコア表示実装
 
 このテストは承認されたAcceptance Criteriaから導出されています。
 """
-import pytest
 from unittest.mock import Mock, patch, mock_open
 from src.phase3_pod_report.pod201_report_generator import Pod201ReportGenerator
 

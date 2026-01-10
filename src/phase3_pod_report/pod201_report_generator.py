@@ -177,7 +177,11 @@ class Pod201ReportGenerator:
             - Uses Unicode block characters: █ (filled), ░ (empty)
             - Bar length: 10 characters (10% increments)
             - Format: [bar]
+            - Clamps percentage to valid range for defensive coding
         """
+        # Clamp to valid range (defensive coding)
+        percentage = max(0, min(100, percentage))
+
         # Calculate number of filled blocks (out of 10)
         filled_blocks = percentage // 10
         empty_blocks = 10 - filled_blocks
