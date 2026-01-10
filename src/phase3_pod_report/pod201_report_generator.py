@@ -4,9 +4,10 @@ Pod201 Report Generator for Resonance Archive System.
 Generates Pod201-style reports from similarity search results using LLM.
 """
 import re
+import logging
 from datetime import datetime
 from io import StringIO
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from pathlib import Path
 
 from rich.console import Console
@@ -14,9 +15,18 @@ from rich.table import Table
 from rich.panel import Panel
 from rich import box
 
+# Set up logger
+logger = logging.getLogger(__name__)
+
 
 class Pod201ReportGenerator:
     """Generates Pod201-style reports from search results using Ollama LLM."""
+
+    # Default persona prompt when persona.txt is not available
+    DEFAULT_PERSONA = """あなたはPod201、知的アーカイブ解析エージェントです。
+簡潔で核心的な洞察を提供する、だ・である調の断定形で報告してください。
+一人称は「当機」、二人称は「随行対象」を使用してください。
+接頭語ラベル（報告/分析/提案等）を使用してください。"""
 
     def __init__(self, ollama_client):
         """
@@ -36,19 +46,25 @@ class Pod201ReportGenerator:
         Load Pod201 persona prompt from file.
 
         Returns:
-            Persona prompt text
+            Persona prompt text (from file or default)
 
-        Raises:
-            FileNotFoundError: If .pod201/persona.txt does not exist
+        Note:
+            Falls back to DEFAULT_PERSONA if file is not found
         """
         persona_path = Path(".pod201/persona.txt")
-        with open(persona_path, "r", encoding="utf-8") as f:
-            return f.read()
+        try:
+            with open(persona_path, "r", encoding="utf-8") as f:
+                return f.read()
+        except FileNotFoundError:
+            logger.error(
+                f"Persona file not found at {persona_path}. Using default persona."
+            )
+            return self.DEFAULT_PERSONA
 
     def generate_report(
         self,
         search_results: List[Dict[str, Any]]
-    ) -> Optional[str]:
+    ) -> str:
         """
         Generate Pod201-style report from search results.
 
@@ -57,13 +73,13 @@ class Pod201ReportGenerator:
                             Each dict contains: id, distance, metadata
 
         Returns:
-            Generated Pod201-style report text, or None if generation fails
+            Generated Pod201-style report text (falls back to plain text on error)
 
         Implementation:
             - Formats search results into a structured prompt
             - Includes Pod201 persona as system context
             - Uses llama3.1:8b model for generation
-            - Returns None on error
+            - On error: logs the error and returns fallback report
         """
         # Format search results for the prompt
         results_text = self._format_search_results(search_results)
@@ -91,9 +107,41 @@ class Pod201ReportGenerator:
                 model="llama3.1:8b",
                 prompt=full_prompt
             )
+
+            # Validate response
+            if report is None or (isinstance(report, str) and not report.strip()):
+                logger.error("LLM returned empty or None response")
+                return self._generate_fallback_report(results_text)
+
             return report
-        except Exception:
-            return None
+
+        except ConnectionError as e:
+            logger.error(f"Connection error during LLM generation: {e}", exc_info=True)
+            return self._generate_fallback_report(results_text, error_type="接続エラー")
+        except TimeoutError as e:
+            logger.error(f"Timeout during LLM generation: {e}", exc_info=True)
+            return self._generate_fallback_report(results_text, error_type="タイムアウト")
+        except Exception as e:
+            logger.error(f"Error during LLM generation: {e}", exc_info=True)
+            return self._generate_fallback_report(results_text)
+
+    def _generate_fallback_report(
+        self,
+        results_text: str,
+        error_type: str = "LLM生成失敗"
+    ) -> str:
+        """
+        Generate fallback report when LLM generation fails.
+
+        Args:
+            results_text: Formatted search results text
+            error_type: Type of error that occurred
+
+        Returns:
+            Fallback report with warning message and search results
+        """
+        warning_message = f"【警告】{error_type}。検索結果を表示します。\n\n"
+        return warning_message + results_text
 
     def _extract_date(self, metadata: Dict[str, Any]) -> Optional[str]:
         """

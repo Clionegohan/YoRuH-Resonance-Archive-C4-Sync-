@@ -233,7 +233,7 @@ def test_format_search_results_handles_invalid_distance():
         for search_results in test_cases:
             result = generator._format_search_results(search_results)
             # Should format without raising TypeError
-            assert "類似度距離: 0.0000" in result, f"Should default to 0.0 for {search_results}"
+            assert "類似度:" in result and "distance: 0.0000" in result, f"Should default to 0.0 for {search_results}"
 
 
 def test_format_search_results_handles_invalid_metadata():
@@ -256,4 +256,4 @@ def test_format_search_results_handles_invalid_metadata():
             result = generator._format_search_results(search_results)
             # Should format without raising TypeError on .items() or .get()
             assert "ID:" in result, f"Should handle invalid metadata in {search_results}"
-            assert "類似度距離:" in result
+            assert "類似度:" in result
